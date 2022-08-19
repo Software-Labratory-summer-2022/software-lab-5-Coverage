@@ -1,0 +1,177 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > ContentHandler</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.json.simple.parser</a>
+</div>
+
+<h1>Coverage Summary for Class: ContentHandler (org.json.simple.parser)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">ContentHandler</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package org.json.simple.parser;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;
+&nbsp;/**
+&nbsp; * A simplified and stoppable SAX-like content handler for stream processing of JSON text. 
+&nbsp; * 
+&nbsp; * @see org.xml.sax.ContentHandler
+&nbsp; * @see org.json.simple.parser.JSONParser#parse(java.io.Reader, ContentHandler, boolean)
+&nbsp; * 
+&nbsp; * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
+&nbsp; */
+&nbsp;public interface ContentHandler {
+&nbsp;	/**
+&nbsp;	 * Receive notification of the beginning of JSON processing.
+&nbsp;	 * The parser will invoke this method only once.
+&nbsp;     * 
+&nbsp;	 * @throws ParseException 
+&nbsp;	 * 			- JSONParser will stop and throw the same exception to the caller when receiving this exception.
+&nbsp;	 */
+&nbsp;	void startJSON() throws ParseException, IOException;
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Receive notification of the end of JSON processing.
+&nbsp;	 * 
+&nbsp;	 * @throws ParseException
+&nbsp;	 */
+&nbsp;	void endJSON() throws ParseException, IOException;
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Receive notification of the beginning of a JSON object.
+&nbsp;	 * 
+&nbsp;	 * @return false if the handler wants to stop parsing after return.
+&nbsp;	 * @throws ParseException
+&nbsp;     *          - JSONParser will stop and throw the same exception to the caller when receiving this exception.
+&nbsp;     * @see #endJSON
+&nbsp;	 */
+&nbsp;	boolean startObject() throws ParseException, IOException;
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Receive notification of the end of a JSON object.
+&nbsp;	 * 
+&nbsp;	 * @return false if the handler wants to stop parsing after return.
+&nbsp;	 * @throws ParseException
+&nbsp;     * 
+&nbsp;     * @see #startObject
+&nbsp;	 */
+&nbsp;	boolean endObject() throws ParseException, IOException;
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Receive notification of the beginning of a JSON object entry.
+&nbsp;	 * 
+&nbsp;	 * @param key - Key of a JSON object entry. 
+&nbsp;	 * 
+&nbsp;	 * @return false if the handler wants to stop parsing after return.
+&nbsp;	 * @throws ParseException
+&nbsp;     * 
+&nbsp;     * @see #endObjectEntry
+&nbsp;	 */
+&nbsp;	boolean startObjectEntry(String key) throws ParseException, IOException;
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Receive notification of the end of the value of previous object entry.
+&nbsp;	 * 
+&nbsp;	 * @return false if the handler wants to stop parsing after return.
+&nbsp;	 * @throws ParseException
+&nbsp;     * 
+&nbsp;     * @see #startObjectEntry
+&nbsp;	 */
+&nbsp;	boolean endObjectEntry() throws ParseException, IOException;
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Receive notification of the beginning of a JSON array.
+&nbsp;	 * 
+&nbsp;	 * @return false if the handler wants to stop parsing after return.
+&nbsp;	 * @throws ParseException
+&nbsp;     * 
+&nbsp;     * @see #endArray
+&nbsp;	 */
+&nbsp;	boolean startArray() throws ParseException, IOException;
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Receive notification of the end of a JSON array.
+&nbsp;	 * 
+&nbsp;	 * @return false if the handler wants to stop parsing after return.
+&nbsp;	 * @throws ParseException
+&nbsp;     * 
+&nbsp;     * @see #startArray
+&nbsp;	 */
+&nbsp;	boolean endArray() throws ParseException, IOException;
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Receive notification of the JSON primitive values:
+&nbsp;	 * 	java.lang.String,
+&nbsp;	 * 	java.lang.Number,
+&nbsp;	 * 	java.lang.Boolean
+&nbsp;	 * 	null
+&nbsp;	 * 
+&nbsp;	 * @param value - Instance of the following:
+&nbsp;	 * 			java.lang.String,
+&nbsp;	 * 			java.lang.Number,
+&nbsp;	 * 			java.lang.Boolean
+&nbsp;	 * 			null
+&nbsp;	 * 
+&nbsp;	 * @return false if the handler wants to stop parsing after return.
+&nbsp;	 * @throws ParseException
+&nbsp;	 */
+&nbsp;	boolean primitive(Object value) throws ParseException, IOException;
+&nbsp;		
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2022-08-19 20:57</div>
+</div>
+</body>
+</html>

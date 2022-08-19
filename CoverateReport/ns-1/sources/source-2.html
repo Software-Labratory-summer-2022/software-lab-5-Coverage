@@ -1,0 +1,235 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > JSONObject</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.json.simple</a>
+</div>
+
+<h1>Coverage Summary for Class: JSONObject (org.json.simple)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JSONObject</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    88.9%
+  </span>
+  <span class="absValue">
+    (8/9)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    86.1%
+  </span>
+  <span class="absValue">
+    (31/36)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * $Id: JSONObject.java,v 1.1 2006/04/15 14:10:48 platform Exp $
+&nbsp; * Created on 2006-4-10
+&nbsp; */
+&nbsp;package org.json.simple;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.StringWriter;
+&nbsp;import java.io.Writer;
+&nbsp;import java.util.HashMap;
+&nbsp;import java.util.Iterator;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;/**
+&nbsp; * A JSON object. Key value pairs are unordered. JSONObject supports java.util.Map interface.
+&nbsp; * 
+&nbsp; * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
+&nbsp; */
+&nbsp;public class JSONObject extends HashMap implements Map, JSONAware, JSONStreamAware{
+&nbsp;	
+&nbsp;	private static final long serialVersionUID = -503443796854799292L;
+&nbsp;	
+&nbsp;	
+&nbsp;	public JSONObject() {
+<b class="fc">&nbsp;		super();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	/**
+&nbsp;	 * Allows creation of a JSONObject from a Map. After that, both the
+&nbsp;	 * generated JSONObject and the Map can be modified independently.
+&nbsp;	 * 
+&nbsp;	 * @param map
+&nbsp;	 */
+&nbsp;	public JSONObject(Map map) {
+<b class="nc">&nbsp;		super(map);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;
+&nbsp;    /**
+&nbsp;     * Encode a map into JSON text and write it to out.
+&nbsp;     * If this map is also a JSONAware or JSONStreamAware, JSONAware or JSONStreamAware specific behaviours will be ignored at this top level.
+&nbsp;     * 
+&nbsp;     * @see org.json.simple.JSONValue#writeJSONString(Object, Writer)
+&nbsp;     * 
+&nbsp;     * @param map
+&nbsp;     * @param out
+&nbsp;     */
+&nbsp;	public static void writeJSONString(Map map, Writer out) throws IOException {
+<b class="fc">&nbsp;		if(map == null){</b>
+<b class="nc">&nbsp;			out.write(&quot;null&quot;);</b>
+&nbsp;			return;
+&nbsp;		}
+&nbsp;		
+<b class="fc">&nbsp;		boolean first = true;</b>
+<b class="fc">&nbsp;		Iterator iter=map.entrySet().iterator();</b>
+&nbsp;		
+<b class="fc">&nbsp;        out.write(&#39;{&#39;);</b>
+<b class="fc">&nbsp;		while(iter.hasNext()){</b>
+<b class="fc">&nbsp;            if(first)</b>
+<b class="fc">&nbsp;                first = false;</b>
+&nbsp;            else
+<b class="fc">&nbsp;                out.write(&#39;,&#39;);</b>
+<b class="fc">&nbsp;			Map.Entry entry=(Map.Entry)iter.next();</b>
+<b class="fc">&nbsp;            out.write(&#39;\&quot;&#39;);</b>
+<b class="fc">&nbsp;            out.write(escape(String.valueOf(entry.getKey())));</b>
+<b class="fc">&nbsp;            out.write(&#39;\&quot;&#39;);</b>
+<b class="fc">&nbsp;            out.write(&#39;:&#39;);</b>
+<b class="fc">&nbsp;			JSONValue.writeJSONString(entry.getValue(), out);</b>
+<b class="fc">&nbsp;		}</b>
+<b class="fc">&nbsp;		out.write(&#39;}&#39;);</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public void writeJSONString(Writer out) throws IOException{
+<b class="fc">&nbsp;		writeJSONString(this, out);</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Convert a map to JSON text. The result is a JSON object. 
+&nbsp;	 * If this map is also a JSONAware, JSONAware specific behaviours will be omitted at this top level.
+&nbsp;	 * 
+&nbsp;	 * @see org.json.simple.JSONValue#toJSONString(Object)
+&nbsp;	 * 
+&nbsp;	 * @param map
+&nbsp;	 * @return JSON text, or &quot;null&quot; if map is null.
+&nbsp;	 */
+&nbsp;	public static String toJSONString(Map map){
+<b class="fc">&nbsp;		final StringWriter writer = new StringWriter();</b>
+&nbsp;		
+&nbsp;		try {
+<b class="fc">&nbsp;			writeJSONString(map, writer);</b>
+<b class="fc">&nbsp;			return writer.toString();</b>
+<b class="nc">&nbsp;		} catch (IOException e) {</b>
+&nbsp;			// This should never happen with a StringWriter
+<b class="nc">&nbsp;			throw new RuntimeException(e);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;	
+&nbsp;	public String toJSONString(){
+<b class="fc">&nbsp;		return toJSONString(this);</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	public String toString(){
+<b class="fc">&nbsp;		return toJSONString();</b>
+&nbsp;	}
+&nbsp;
+&nbsp;	public static String toString(String key,Object value){
+<b class="fc">&nbsp;        StringBuffer sb = new StringBuffer();</b>
+<b class="fc">&nbsp;        sb.append(&#39;\&quot;&#39;);</b>
+<b class="fc">&nbsp;        if(key == null)</b>
+<b class="nc">&nbsp;            sb.append(&quot;null&quot;);</b>
+&nbsp;        else
+<b class="fc">&nbsp;            JSONValue.escape(key, sb);</b>
+<b class="fc">&nbsp;		sb.append(&#39;\&quot;&#39;).append(&#39;:&#39;);</b>
+&nbsp;		
+<b class="fc">&nbsp;		sb.append(JSONValue.toJSONString(value));</b>
+&nbsp;		
+<b class="fc">&nbsp;		return sb.toString();</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Escape quotes, \, /, \r, \n, \b, \f, \t and other control characters (U+0000 through U+001F).
+&nbsp;	 * It&#39;s the same as JSONValue.escape() only for compatibility here.
+&nbsp;	 * 
+&nbsp;	 * @see org.json.simple.JSONValue#escape(String)
+&nbsp;	 * 
+&nbsp;	 * @param s
+&nbsp;	 * @return
+&nbsp;	 */
+&nbsp;	public static String escape(String s){
+<b class="fc">&nbsp;		return JSONValue.escape(s);</b>
+&nbsp;	}
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2022-08-19 20:57</div>
+</div>
+</body>
+</html>

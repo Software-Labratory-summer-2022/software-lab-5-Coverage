@@ -1,0 +1,636 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > JSONParser</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.json.simple.parser</a>
+</div>
+
+<h1>Coverage Summary for Class: JSONParser (org.json.simple.parser)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">JSONParser</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    68.8%
+  </span>
+  <span class="absValue">
+    (11/16)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    36.7%
+  </span>
+  <span class="absValue">
+    (92/251)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * $Id: JSONParser.java,v 1.1 2006/04/15 14:10:48 platform Exp $
+&nbsp; * Created on 2006-4-15
+&nbsp; */
+&nbsp;package org.json.simple.parser;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.io.Reader;
+&nbsp;import java.io.StringReader;
+&nbsp;import java.util.LinkedList;
+&nbsp;import java.util.List;
+&nbsp;import java.util.Map;
+&nbsp;
+&nbsp;import org.json.simple.JSONArray;
+&nbsp;import org.json.simple.JSONObject;
+&nbsp;
+&nbsp;
+&nbsp;/**
+&nbsp; * Parser for JSON text. Please note that JSONParser is NOT thread-safe.
+&nbsp; * 
+&nbsp; * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
+&nbsp; */
+<b class="fc">&nbsp;public class JSONParser {</b>
+&nbsp;	public static final int S_INIT=0;
+&nbsp;	public static final int S_IN_FINISHED_VALUE=1;//string,number,boolean,null,object,array
+&nbsp;	public static final int S_IN_OBJECT=2;
+&nbsp;	public static final int S_IN_ARRAY=3;
+&nbsp;	public static final int S_PASSED_PAIR_KEY=4;
+&nbsp;	public static final int S_IN_PAIR_VALUE=5;
+&nbsp;	public static final int S_END=6;
+&nbsp;	public static final int S_IN_ERROR=-1;
+&nbsp;	
+&nbsp;	private LinkedList handlerStatusStack;
+<b class="fc">&nbsp;	private Yylex lexer = new Yylex((Reader)null);</b>
+<b class="fc">&nbsp;	private Yytoken token = null;</b>
+<b class="fc">&nbsp;	private int status = S_INIT;</b>
+&nbsp;	
+&nbsp;	private int peekStatus(LinkedList statusStack){
+<b class="fc">&nbsp;		if(statusStack.size()==0)</b>
+<b class="nc">&nbsp;			return -1;</b>
+<b class="fc">&nbsp;		Integer status=(Integer)statusStack.getFirst();</b>
+<b class="fc">&nbsp;		return status.intValue();</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;    /**
+&nbsp;     *  Reset the parser to the initial state without resetting the underlying reader.
+&nbsp;     *
+&nbsp;     */
+&nbsp;    public void reset(){
+<b class="fc">&nbsp;        token = null;</b>
+<b class="fc">&nbsp;        status = S_INIT;</b>
+<b class="fc">&nbsp;        handlerStatusStack = null;</b>
+&nbsp;    }
+&nbsp;    
+&nbsp;    /**
+&nbsp;     * Reset the parser to the initial state with a new character reader.
+&nbsp;     * 
+&nbsp;     * @param in - The new character reader.
+&nbsp;     * @throws IOException
+&nbsp;     * @throws ParseException
+&nbsp;     */
+&nbsp;	public void reset(Reader in){
+<b class="fc">&nbsp;		lexer.yyreset(in);</b>
+<b class="fc">&nbsp;		reset();</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * @return The position of the beginning of the current token.
+&nbsp;	 */
+&nbsp;	public int getPosition(){
+<b class="nc">&nbsp;		return lexer.getPosition();</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	public Object parse(String s) throws ParseException{
+<b class="fc">&nbsp;		return parse(s, (ContainerFactory)null);</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	public Object parse(String s, ContainerFactory containerFactory) throws ParseException{
+<b class="fc">&nbsp;		StringReader in=new StringReader(s);</b>
+&nbsp;		try{
+<b class="fc">&nbsp;			return parse(in, containerFactory);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch(IOException ie){</b>
+&nbsp;			/*
+&nbsp;			 * Actually it will never happen.
+&nbsp;			 */
+<b class="nc">&nbsp;			throw new ParseException(-1, ParseException.ERROR_UNEXPECTED_EXCEPTION, ie);</b>
+&nbsp;		}
+&nbsp;	}
+&nbsp;	
+&nbsp;	public Object parse(Reader in) throws IOException, ParseException{
+<b class="fc">&nbsp;		return parse(in, (ContainerFactory)null);</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Parse JSON text into java object from the input source.
+&nbsp;	 * 	
+&nbsp;	 * @param in
+&nbsp;     * @param containerFactory - Use this factory to createyour own JSON object and JSON array containers.
+&nbsp;	 * @return Instance of the following:
+&nbsp;	 *  org.json.simple.JSONObject,
+&nbsp;	 * 	org.json.simple.JSONArray,
+&nbsp;	 * 	java.lang.String,
+&nbsp;	 * 	java.lang.Number,
+&nbsp;	 * 	java.lang.Boolean,
+&nbsp;	 * 	null
+&nbsp;	 * 
+&nbsp;	 * @throws IOException
+&nbsp;	 * @throws ParseException
+&nbsp;	 */
+&nbsp;	public Object parse(Reader in, ContainerFactory containerFactory) throws IOException, ParseException{
+<b class="fc">&nbsp;		reset(in);</b>
+<b class="fc">&nbsp;		LinkedList statusStack = new LinkedList();</b>
+<b class="fc">&nbsp;		LinkedList valueStack = new LinkedList();</b>
+&nbsp;		
+&nbsp;		try{
+&nbsp;			do{
+<b class="fc">&nbsp;				nextToken();</b>
+<b class="fc">&nbsp;				switch(status){</b>
+&nbsp;				case S_INIT:
+<b class="fc">&nbsp;					switch(token.type){</b>
+&nbsp;					case Yytoken.TYPE_VALUE:
+<b class="nc">&nbsp;						status=S_IN_FINISHED_VALUE;</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="nc">&nbsp;						valueStack.addFirst(token.value);</b>
+<b class="nc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_LEFT_BRACE:
+<b class="fc">&nbsp;						status=S_IN_OBJECT;</b>
+<b class="fc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="fc">&nbsp;						valueStack.addFirst(createObjectContainer(containerFactory));</b>
+<b class="fc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_LEFT_SQUARE:
+<b class="fc">&nbsp;						status=S_IN_ARRAY;</b>
+<b class="fc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="fc">&nbsp;						valueStack.addFirst(createArrayContainer(containerFactory));</b>
+<b class="fc">&nbsp;						break;</b>
+&nbsp;					default:
+<b class="nc">&nbsp;						status=S_IN_ERROR;</b>
+&nbsp;					}//inner switch
+<b class="nc">&nbsp;					break;</b>
+&nbsp;					
+&nbsp;				case S_IN_FINISHED_VALUE:
+<b class="fc">&nbsp;					if(token.type==Yytoken.TYPE_EOF)</b>
+<b class="fc">&nbsp;						return valueStack.removeFirst();</b>
+&nbsp;					else
+<b class="nc">&nbsp;						throw new ParseException(getPosition(), ParseException.ERROR_UNEXPECTED_TOKEN, token);</b>
+&nbsp;					
+&nbsp;				case S_IN_OBJECT:
+<b class="fc">&nbsp;					switch(token.type){</b>
+&nbsp;					case Yytoken.TYPE_COMMA:
+<b class="fc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_VALUE:
+<b class="fc">&nbsp;						if(token.value instanceof String){</b>
+<b class="fc">&nbsp;							String key=(String)token.value;</b>
+<b class="fc">&nbsp;							valueStack.addFirst(key);</b>
+<b class="fc">&nbsp;							status=S_PASSED_PAIR_KEY;</b>
+<b class="fc">&nbsp;							statusStack.addFirst(new Integer(status));</b>
+<b class="fc">&nbsp;						}</b>
+&nbsp;						else{
+<b class="nc">&nbsp;							status=S_IN_ERROR;</b>
+&nbsp;						}
+<b class="nc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_RIGHT_BRACE:
+<b class="fc">&nbsp;						if(valueStack.size()&gt;1){</b>
+<b class="fc">&nbsp;							statusStack.removeFirst();</b>
+<b class="fc">&nbsp;							valueStack.removeFirst();</b>
+<b class="fc">&nbsp;							status=peekStatus(statusStack);</b>
+&nbsp;						}
+&nbsp;						else{
+<b class="fc">&nbsp;							status=S_IN_FINISHED_VALUE;</b>
+&nbsp;						}
+<b class="fc">&nbsp;						break;</b>
+&nbsp;					default:
+<b class="nc">&nbsp;						status=S_IN_ERROR;</b>
+<b class="nc">&nbsp;						break;</b>
+&nbsp;					}//inner switch
+&nbsp;					break;
+&nbsp;					
+&nbsp;				case S_PASSED_PAIR_KEY:
+<b class="fc">&nbsp;					switch(token.type){</b>
+&nbsp;					case Yytoken.TYPE_COLON:
+<b class="fc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_VALUE:
+<b class="fc">&nbsp;						statusStack.removeFirst();</b>
+<b class="fc">&nbsp;						String key=(String)valueStack.removeFirst();</b>
+<b class="fc">&nbsp;						Map parent=(Map)valueStack.getFirst();</b>
+<b class="fc">&nbsp;						parent.put(key,token.value);</b>
+<b class="fc">&nbsp;						status=peekStatus(statusStack);</b>
+<b class="fc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_LEFT_SQUARE:
+<b class="fc">&nbsp;						statusStack.removeFirst();</b>
+<b class="fc">&nbsp;						key=(String)valueStack.removeFirst();</b>
+<b class="fc">&nbsp;						parent=(Map)valueStack.getFirst();</b>
+<b class="fc">&nbsp;						List newArray=createArrayContainer(containerFactory);</b>
+<b class="fc">&nbsp;						parent.put(key,newArray);</b>
+<b class="fc">&nbsp;						status=S_IN_ARRAY;</b>
+<b class="fc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="fc">&nbsp;						valueStack.addFirst(newArray);</b>
+<b class="fc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_LEFT_BRACE:
+<b class="fc">&nbsp;						statusStack.removeFirst();</b>
+<b class="fc">&nbsp;						key=(String)valueStack.removeFirst();</b>
+<b class="fc">&nbsp;						parent=(Map)valueStack.getFirst();</b>
+<b class="fc">&nbsp;						Map newObject=createObjectContainer(containerFactory);</b>
+<b class="fc">&nbsp;						parent.put(key,newObject);</b>
+<b class="fc">&nbsp;						status=S_IN_OBJECT;</b>
+<b class="fc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="fc">&nbsp;						valueStack.addFirst(newObject);</b>
+<b class="fc">&nbsp;						break;</b>
+&nbsp;					default:
+<b class="nc">&nbsp;						status=S_IN_ERROR;</b>
+&nbsp;					}
+<b class="nc">&nbsp;					break;</b>
+&nbsp;					
+&nbsp;				case S_IN_ARRAY:
+<b class="fc">&nbsp;					switch(token.type){</b>
+&nbsp;					case Yytoken.TYPE_COMMA:
+<b class="fc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_VALUE:
+<b class="fc">&nbsp;						List val=(List)valueStack.getFirst();</b>
+<b class="fc">&nbsp;						val.add(token.value);</b>
+<b class="fc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_RIGHT_SQUARE:
+<b class="fc">&nbsp;						if(valueStack.size()&gt;1){</b>
+<b class="fc">&nbsp;							statusStack.removeFirst();</b>
+<b class="fc">&nbsp;							valueStack.removeFirst();</b>
+<b class="fc">&nbsp;							status=peekStatus(statusStack);</b>
+&nbsp;						}
+&nbsp;						else{
+<b class="fc">&nbsp;							status=S_IN_FINISHED_VALUE;</b>
+&nbsp;						}
+<b class="fc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_LEFT_BRACE:
+<b class="nc">&nbsp;						val=(List)valueStack.getFirst();</b>
+<b class="nc">&nbsp;						Map newObject=createObjectContainer(containerFactory);</b>
+<b class="nc">&nbsp;						val.add(newObject);</b>
+<b class="nc">&nbsp;						status=S_IN_OBJECT;</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="nc">&nbsp;						valueStack.addFirst(newObject);</b>
+<b class="nc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_LEFT_SQUARE:
+<b class="nc">&nbsp;						val=(List)valueStack.getFirst();</b>
+<b class="nc">&nbsp;						List newArray=createArrayContainer(containerFactory);</b>
+<b class="nc">&nbsp;						val.add(newArray);</b>
+<b class="nc">&nbsp;						status=S_IN_ARRAY;</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="nc">&nbsp;						valueStack.addFirst(newArray);</b>
+<b class="nc">&nbsp;						break;</b>
+&nbsp;					default:
+<b class="nc">&nbsp;						status=S_IN_ERROR;</b>
+&nbsp;					}//inner switch
+<b class="nc">&nbsp;					break;</b>
+&nbsp;				case S_IN_ERROR:
+<b class="nc">&nbsp;					throw new ParseException(getPosition(), ParseException.ERROR_UNEXPECTED_TOKEN, token);</b>
+&nbsp;				}//switch
+<b class="fc">&nbsp;				if(status==S_IN_ERROR){</b>
+<b class="nc">&nbsp;					throw new ParseException(getPosition(), ParseException.ERROR_UNEXPECTED_TOKEN, token);</b>
+&nbsp;				}
+<b class="fc">&nbsp;			}while(token.type!=Yytoken.TYPE_EOF);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch(IOException ie){</b>
+<b class="nc">&nbsp;			throw ie;</b>
+<b class="nc">&nbsp;		}</b>
+&nbsp;		
+<b class="nc">&nbsp;		throw new ParseException(getPosition(), ParseException.ERROR_UNEXPECTED_TOKEN, token);</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	private void nextToken() throws ParseException, IOException{
+<b class="fc">&nbsp;		token = lexer.yylex();</b>
+<b class="fc">&nbsp;		if(token == null)</b>
+<b class="fc">&nbsp;			token = new Yytoken(Yytoken.TYPE_EOF, null);</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	private Map createObjectContainer(ContainerFactory containerFactory){
+<b class="fc">&nbsp;		if(containerFactory == null)</b>
+<b class="fc">&nbsp;			return new JSONObject();</b>
+<b class="nc">&nbsp;		Map m = containerFactory.createObjectContainer();</b>
+&nbsp;		
+<b class="nc">&nbsp;		if(m == null)</b>
+<b class="nc">&nbsp;			return new JSONObject();</b>
+<b class="nc">&nbsp;		return m;</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	private List createArrayContainer(ContainerFactory containerFactory){
+<b class="fc">&nbsp;		if(containerFactory == null)</b>
+<b class="fc">&nbsp;			return new JSONArray();</b>
+<b class="nc">&nbsp;		List l = containerFactory.creatArrayContainer();</b>
+&nbsp;		
+<b class="nc">&nbsp;		if(l == null)</b>
+<b class="nc">&nbsp;			return new JSONArray();</b>
+<b class="nc">&nbsp;		return l;</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	public void parse(String s, ContentHandler contentHandler) throws ParseException{
+<b class="nc">&nbsp;		parse(s, contentHandler, false);</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	public void parse(String s, ContentHandler contentHandler, boolean isResume) throws ParseException{
+<b class="nc">&nbsp;		StringReader in=new StringReader(s);</b>
+&nbsp;		try{
+<b class="nc">&nbsp;			parse(in, contentHandler, isResume);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch(IOException ie){</b>
+&nbsp;			/*
+&nbsp;			 * Actually it will never happen.
+&nbsp;			 */
+<b class="nc">&nbsp;			throw new ParseException(-1, ParseException.ERROR_UNEXPECTED_EXCEPTION, ie);</b>
+<b class="nc">&nbsp;		}</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	public void parse(Reader in, ContentHandler contentHandler) throws IOException, ParseException{
+<b class="nc">&nbsp;		parse(in, contentHandler, false);</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	/**
+&nbsp;	 * Stream processing of JSON text.
+&nbsp;	 * 
+&nbsp;	 * @see ContentHandler
+&nbsp;	 * 
+&nbsp;	 * @param in
+&nbsp;	 * @param contentHandler
+&nbsp;	 * @param isResume - Indicates if it continues previous parsing operation.
+&nbsp;     *                   If set to true, resume parsing the old stream, and parameter &#39;in&#39; will be ignored. 
+&nbsp;	 *                   If this method is called for the first time in this instance, isResume will be ignored.
+&nbsp;	 * 
+&nbsp;	 * @throws IOException
+&nbsp;	 * @throws ParseException
+&nbsp;	 */
+&nbsp;	public void parse(Reader in, ContentHandler contentHandler, boolean isResume) throws IOException, ParseException{
+<b class="nc">&nbsp;		if(!isResume){</b>
+<b class="nc">&nbsp;			reset(in);</b>
+<b class="nc">&nbsp;			handlerStatusStack = new LinkedList();</b>
+&nbsp;		}
+&nbsp;		else{
+<b class="nc">&nbsp;			if(handlerStatusStack == null){</b>
+<b class="nc">&nbsp;				isResume = false;</b>
+<b class="nc">&nbsp;				reset(in);</b>
+<b class="nc">&nbsp;				handlerStatusStack = new LinkedList();</b>
+&nbsp;			}
+&nbsp;		}
+&nbsp;		
+<b class="nc">&nbsp;		LinkedList statusStack = handlerStatusStack;	</b>
+&nbsp;		
+&nbsp;		try{
+&nbsp;			do{
+<b class="nc">&nbsp;				switch(status){</b>
+&nbsp;				case S_INIT:
+<b class="nc">&nbsp;					contentHandler.startJSON();</b>
+<b class="nc">&nbsp;					nextToken();</b>
+<b class="nc">&nbsp;					switch(token.type){</b>
+&nbsp;					case Yytoken.TYPE_VALUE:
+<b class="nc">&nbsp;						status=S_IN_FINISHED_VALUE;</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="nc">&nbsp;						if(!contentHandler.primitive(token.value))</b>
+&nbsp;							return;
+&nbsp;						break;
+&nbsp;					case Yytoken.TYPE_LEFT_BRACE:
+<b class="nc">&nbsp;						status=S_IN_OBJECT;</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="nc">&nbsp;						if(!contentHandler.startObject())</b>
+&nbsp;							return;
+&nbsp;						break;
+&nbsp;					case Yytoken.TYPE_LEFT_SQUARE:
+<b class="nc">&nbsp;						status=S_IN_ARRAY;</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="nc">&nbsp;						if(!contentHandler.startArray())</b>
+&nbsp;							return;
+&nbsp;						break;
+&nbsp;					default:
+<b class="nc">&nbsp;						status=S_IN_ERROR;</b>
+&nbsp;					}//inner switch
+<b class="nc">&nbsp;					break;</b>
+&nbsp;					
+&nbsp;				case S_IN_FINISHED_VALUE:
+<b class="nc">&nbsp;					nextToken();</b>
+<b class="nc">&nbsp;					if(token.type==Yytoken.TYPE_EOF){</b>
+<b class="nc">&nbsp;						contentHandler.endJSON();</b>
+<b class="nc">&nbsp;						status = S_END;</b>
+&nbsp;						return;
+&nbsp;					}
+&nbsp;					else{
+<b class="nc">&nbsp;						status = S_IN_ERROR;</b>
+<b class="nc">&nbsp;						throw new ParseException(getPosition(), ParseException.ERROR_UNEXPECTED_TOKEN, token);</b>
+&nbsp;					}
+&nbsp;			
+&nbsp;				case S_IN_OBJECT:
+<b class="nc">&nbsp;					nextToken();</b>
+<b class="nc">&nbsp;					switch(token.type){</b>
+&nbsp;					case Yytoken.TYPE_COMMA:
+<b class="nc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_VALUE:
+<b class="nc">&nbsp;						if(token.value instanceof String){</b>
+<b class="nc">&nbsp;							String key=(String)token.value;</b>
+<b class="nc">&nbsp;							status=S_PASSED_PAIR_KEY;</b>
+<b class="nc">&nbsp;							statusStack.addFirst(new Integer(status));</b>
+<b class="nc">&nbsp;							if(!contentHandler.startObjectEntry(key))</b>
+&nbsp;								return;
+<b class="nc">&nbsp;						}</b>
+&nbsp;						else{
+<b class="nc">&nbsp;							status=S_IN_ERROR;</b>
+&nbsp;						}
+<b class="nc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_RIGHT_BRACE:
+<b class="nc">&nbsp;						if(statusStack.size()&gt;1){</b>
+<b class="nc">&nbsp;							statusStack.removeFirst();</b>
+<b class="nc">&nbsp;							status=peekStatus(statusStack);</b>
+&nbsp;						}
+&nbsp;						else{
+<b class="nc">&nbsp;							status=S_IN_FINISHED_VALUE;</b>
+&nbsp;						}
+<b class="nc">&nbsp;						if(!contentHandler.endObject())</b>
+&nbsp;							return;
+&nbsp;						break;
+&nbsp;					default:
+<b class="nc">&nbsp;						status=S_IN_ERROR;</b>
+<b class="nc">&nbsp;						break;</b>
+&nbsp;					}//inner switch
+&nbsp;					break;
+&nbsp;					
+&nbsp;				case S_PASSED_PAIR_KEY:
+<b class="nc">&nbsp;					nextToken();</b>
+<b class="nc">&nbsp;					switch(token.type){</b>
+&nbsp;					case Yytoken.TYPE_COLON:
+<b class="nc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_VALUE:
+<b class="nc">&nbsp;						statusStack.removeFirst();</b>
+<b class="nc">&nbsp;						status=peekStatus(statusStack);</b>
+<b class="nc">&nbsp;						if(!contentHandler.primitive(token.value))</b>
+&nbsp;							return;
+<b class="nc">&nbsp;						if(!contentHandler.endObjectEntry())</b>
+&nbsp;							return;
+&nbsp;						break;
+&nbsp;					case Yytoken.TYPE_LEFT_SQUARE:
+<b class="nc">&nbsp;						statusStack.removeFirst();</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(S_IN_PAIR_VALUE));</b>
+<b class="nc">&nbsp;						status=S_IN_ARRAY;</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="nc">&nbsp;						if(!contentHandler.startArray())</b>
+&nbsp;							return;
+&nbsp;						break;
+&nbsp;					case Yytoken.TYPE_LEFT_BRACE:
+<b class="nc">&nbsp;						statusStack.removeFirst();</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(S_IN_PAIR_VALUE));</b>
+<b class="nc">&nbsp;						status=S_IN_OBJECT;</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="nc">&nbsp;						if(!contentHandler.startObject())</b>
+&nbsp;							return;
+&nbsp;						break;
+&nbsp;					default:
+<b class="nc">&nbsp;						status=S_IN_ERROR;</b>
+&nbsp;					}
+<b class="nc">&nbsp;					break;</b>
+&nbsp;				
+&nbsp;				case S_IN_PAIR_VALUE:
+&nbsp;					/*
+&nbsp;					 * S_IN_PAIR_VALUE is just a marker to indicate the end of an object entry, it doesn&#39;t proccess any token,
+&nbsp;					 * therefore delay consuming token until next round.
+&nbsp;					 */
+<b class="nc">&nbsp;					statusStack.removeFirst();</b>
+<b class="nc">&nbsp;					status = peekStatus(statusStack);</b>
+<b class="nc">&nbsp;					if(!contentHandler.endObjectEntry())</b>
+&nbsp;						return;
+&nbsp;					break;
+&nbsp;					
+&nbsp;				case S_IN_ARRAY:
+<b class="nc">&nbsp;					nextToken();</b>
+<b class="nc">&nbsp;					switch(token.type){</b>
+&nbsp;					case Yytoken.TYPE_COMMA:
+<b class="nc">&nbsp;						break;</b>
+&nbsp;					case Yytoken.TYPE_VALUE:
+<b class="nc">&nbsp;						if(!contentHandler.primitive(token.value))</b>
+&nbsp;							return;
+&nbsp;						break;
+&nbsp;					case Yytoken.TYPE_RIGHT_SQUARE:
+<b class="nc">&nbsp;						if(statusStack.size()&gt;1){</b>
+<b class="nc">&nbsp;							statusStack.removeFirst();</b>
+<b class="nc">&nbsp;							status=peekStatus(statusStack);</b>
+&nbsp;						}
+&nbsp;						else{
+<b class="nc">&nbsp;							status=S_IN_FINISHED_VALUE;</b>
+&nbsp;						}
+<b class="nc">&nbsp;						if(!contentHandler.endArray())</b>
+&nbsp;							return;
+&nbsp;						break;
+&nbsp;					case Yytoken.TYPE_LEFT_BRACE:
+<b class="nc">&nbsp;						status=S_IN_OBJECT;</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="nc">&nbsp;						if(!contentHandler.startObject())</b>
+&nbsp;							return;
+&nbsp;						break;
+&nbsp;					case Yytoken.TYPE_LEFT_SQUARE:
+<b class="nc">&nbsp;						status=S_IN_ARRAY;</b>
+<b class="nc">&nbsp;						statusStack.addFirst(new Integer(status));</b>
+<b class="nc">&nbsp;						if(!contentHandler.startArray())</b>
+&nbsp;							return;
+&nbsp;						break;
+&nbsp;					default:
+<b class="nc">&nbsp;						status=S_IN_ERROR;</b>
+&nbsp;					}//inner switch
+<b class="nc">&nbsp;					break;</b>
+&nbsp;					
+&nbsp;				case S_END:
+&nbsp;					return;
+&nbsp;					
+&nbsp;				case S_IN_ERROR:
+<b class="nc">&nbsp;					throw new ParseException(getPosition(), ParseException.ERROR_UNEXPECTED_TOKEN, token);</b>
+&nbsp;				}//switch
+<b class="nc">&nbsp;				if(status==S_IN_ERROR){</b>
+<b class="nc">&nbsp;					throw new ParseException(getPosition(), ParseException.ERROR_UNEXPECTED_TOKEN, token);</b>
+&nbsp;				}
+<b class="nc">&nbsp;			}while(token.type!=Yytoken.TYPE_EOF);</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch(IOException ie){</b>
+<b class="nc">&nbsp;			status = S_IN_ERROR;</b>
+<b class="nc">&nbsp;			throw ie;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch(ParseException pe){</b>
+<b class="nc">&nbsp;			status = S_IN_ERROR;</b>
+<b class="nc">&nbsp;			throw pe;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch(RuntimeException re){</b>
+<b class="nc">&nbsp;			status = S_IN_ERROR;</b>
+<b class="nc">&nbsp;			throw re;</b>
+&nbsp;		}
+<b class="nc">&nbsp;		catch(Error e){</b>
+<b class="nc">&nbsp;			status = S_IN_ERROR;</b>
+<b class="nc">&nbsp;			throw e;</b>
+<b class="nc">&nbsp;		}</b>
+&nbsp;		
+<b class="nc">&nbsp;		status = S_IN_ERROR;</b>
+<b class="nc">&nbsp;		throw new ParseException(getPosition(), ParseException.ERROR_UNEXPECTED_TOKEN, token);</b>
+&nbsp;	}
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2022-08-19 20:57</div>
+</div>
+</body>
+</html>

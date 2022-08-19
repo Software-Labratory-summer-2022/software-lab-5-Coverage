@@ -1,0 +1,161 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <title>Coverage Report > Yytoken</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">org.json.simple.parser</a>
+</div>
+
+<h1>Coverage Summary for Class: Yytoken (org.json.simple.parser)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Yytoken</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    50%
+  </span>
+  <span class="absValue">
+    (1/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    21.7%
+  </span>
+  <span class="absValue">
+    (5/23)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;/*
+&nbsp; * $Id: Yytoken.java,v 1.1 2006/04/15 14:10:48 platform Exp $
+&nbsp; * Created on 2006-4-15
+&nbsp; */
+&nbsp;package org.json.simple.parser;
+&nbsp;
+&nbsp;/**
+&nbsp; * @author FangYidong&lt;fangyidong@yahoo.com.cn&gt;
+&nbsp; */
+&nbsp;public class Yytoken {
+&nbsp;	public static final int TYPE_VALUE=0;//JSON primitive value: string,number,boolean,null
+&nbsp;	public static final int TYPE_LEFT_BRACE=1;
+&nbsp;	public static final int TYPE_RIGHT_BRACE=2;
+&nbsp;	public static final int TYPE_LEFT_SQUARE=3;
+&nbsp;	public static final int TYPE_RIGHT_SQUARE=4;
+&nbsp;	public static final int TYPE_COMMA=5;
+&nbsp;	public static final int TYPE_COLON=6;
+&nbsp;	public static final int TYPE_EOF=-1;//end of file
+&nbsp;	
+<b class="fc">&nbsp;	public int type=0;</b>
+<b class="fc">&nbsp;	public Object value=null;</b>
+&nbsp;	
+<b class="fc">&nbsp;	public Yytoken(int type,Object value){</b>
+<b class="fc">&nbsp;		this.type=type;</b>
+<b class="fc">&nbsp;		this.value=value;</b>
+&nbsp;	}
+&nbsp;	
+&nbsp;	public String toString(){
+<b class="nc">&nbsp;		StringBuffer sb = new StringBuffer();</b>
+<b class="nc">&nbsp;		switch(type){</b>
+&nbsp;		case TYPE_VALUE:
+<b class="nc">&nbsp;			sb.append(&quot;VALUE(&quot;).append(value).append(&quot;)&quot;);</b>
+<b class="nc">&nbsp;			break;</b>
+&nbsp;		case TYPE_LEFT_BRACE:
+<b class="nc">&nbsp;			sb.append(&quot;LEFT BRACE({)&quot;);</b>
+<b class="nc">&nbsp;			break;</b>
+&nbsp;		case TYPE_RIGHT_BRACE:
+<b class="nc">&nbsp;			sb.append(&quot;RIGHT BRACE(})&quot;);</b>
+<b class="nc">&nbsp;			break;</b>
+&nbsp;		case TYPE_LEFT_SQUARE:
+<b class="nc">&nbsp;			sb.append(&quot;LEFT SQUARE([)&quot;);</b>
+<b class="nc">&nbsp;			break;</b>
+&nbsp;		case TYPE_RIGHT_SQUARE:
+<b class="nc">&nbsp;			sb.append(&quot;RIGHT SQUARE(])&quot;);</b>
+<b class="nc">&nbsp;			break;</b>
+&nbsp;		case TYPE_COMMA:
+<b class="nc">&nbsp;			sb.append(&quot;COMMA(,)&quot;);</b>
+<b class="nc">&nbsp;			break;</b>
+&nbsp;		case TYPE_COLON:
+<b class="nc">&nbsp;			sb.append(&quot;COLON(:)&quot;);</b>
+<b class="nc">&nbsp;			break;</b>
+&nbsp;		case TYPE_EOF:
+<b class="nc">&nbsp;			sb.append(&quot;END OF FILE&quot;);</b>
+&nbsp;			break;
+&nbsp;		}
+<b class="nc">&nbsp;		return sb.toString();</b>
+&nbsp;	}
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2022-08-19 20:57</div>
+</div>
+</body>
+</html>
